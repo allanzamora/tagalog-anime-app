@@ -5,6 +5,7 @@ import './App.css';
 function App() {
   const [db, setDb] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [dbError, setDbError] = useState(null);
   const [query, setQuery] = useState('');
   const [animeList, setAnimeList] = useState([]);
   const [selectedAnime, setSelectedAnime] = useState(null);
@@ -19,13 +20,18 @@ function App() {
           locateFile: (file) => `https://sql.js.org/dist/${file}`,
         });
 
-        // Use absolute or relative path depending on your deployment
         const response = await fetch('/anime.db');
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        
+        if (!response.ok) {
+          throw new Error(`Failed to fetch anime.db (Status: ${response.status})`);
+        }
+
         const buffer = await response.arrayBuffer();
         const database = new SQL.Database(new Uint8Array(buffer));
         setDb(database);
+
+        // Debug: check what tables exist in the DB
+        const tablesRes = database.exec("SELECT name FROM sqlite_master WHERE type='table';");
+        console.log("Database Tables Found:", tablesRes);
 
         // Fetch list table safely
         const res = database.exec('SELECT id, title, track FROM list');
@@ -35,11 +41,15 @@ function App() {
             title: row[1],
             track: row[2],
           }));
+          console.log("Loaded Anime List:", rows);
           setAnimeList(rows);
+        } else {
+          setDbError("Table 'list' is empty or not found in anime.db");
         }
         setLoading(false);
       } catch (err) {
         console.error('Error loading SQLite DB:', err);
+        setDbError(err.message);
         setLoading(false);
       }
     }
@@ -65,7 +75,6 @@ function App() {
         stmt.free();
 
         setEpisodes(epList);
-        // Fallback if url is null/empty so it still shows the item in UI
         if (epList.length > 0) {
           setActiveVideo(epList[0]);
         } else {
@@ -91,28 +100,39 @@ function App() {
 
   if (loading) {
     return (
-      <div className="container" style={{ textAlign: 'center', padding: '50px' }}>
+      <div style={{ textAlign: 'center', padding: '60px 20px' }}>
         <h2>Loading Database...</h2>
       </div>
     );
   }
 
   return (
-    <div className="container" style={{ border: 'none' }}>
+    <div style={{ width: '100%', minHeight: '100vh', padding: '16px', background: '#09090b', color: '#f4f4f5' }}>
+      {dbError && (
+        <div style={{ background: '#7f1d1d', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
+          <strong>DB Error:</strong> {dbError}
+        </div>
+      )}
+
       {selectedAnime ? (
         <div>
-          <button className="back-btn" onClick={handleBack} style={{ border: 'none' }}>
+          <button 
+            onClick={handleBack} 
+            style={{ background: '#27272a', color: '#fff', border: 'none', padding: '10px 16px', borderRadius: '8px', cursor: 'pointer', marginBottom: '16px' }}
+          >
             ← Back to Anime List
           </button>
 
-          <div className="detail-header" style={{ marginTop: '16px' }}>
-            <span className="badge-category">Track: {selectedAnime.track}</span>
-            <h1>{selectedAnime.title}</h1>
+          <div style={{ marginBottom: '16px' }}>
+            <span style={{ background: '#3b82f6', color: '#fff', padding: '4px 8px', borderRadius: '4px', fontSize: '12px' }}>
+              Track: {selectedAnime.track}
+            </span>
+            <h1 style={{ fontSize: '24px', marginTop: '8px' }}>{selectedAnime.title}</h1>
           </div>
 
-          {/* Active Episode Video Player / Fallback */}
+          {/* Active Episode Video Player */}
           {activeVideo ? (
-            <div className="iframe-container" style={{ margin: '16px 0', borderRadius: '12px', overflow: 'hidden' }}>
+            <div style={{ margin: '16px 0', borderRadius: '12px', overflow: 'hidden', background: '#18181b' }}>
               {activeVideo.url && activeVideo.url !== '(null)' ? (
                 <iframe
                   src={activeVideo.url}
@@ -121,28 +141,28 @@ function App() {
                   style={{ width: '100%', aspectRatio: '16/9', border: 0 }}
                 ></iframe>
               ) : (
-                <div className="card" style={{ padding: '30px', textAlign: 'center', background: '#18181b' }}>
+                <div style={{ padding: '30px', textAlign: 'center' }}>
                   <h3>Now Playing: {activeVideo.title}</h3>
-                  <p style={{ color: '#a1a1aa', marginTop: '8px' }}>Video URL is currently placeholder or null in database.</p>
+                  <p style={{ color: '#a1a1aa', marginTop: '8px' }}>Video URL is currently null or placeholder.</p>
                 </div>
               )}
             </div>
           ) : null}
 
-          {/* Episode List matching track */}
-          <h3>Episodes ({episodes.length})</h3>
-          <div className="episodes-list" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          {/* Episode List */}
+          <h3 style={{ margin: '20px 0 10px 0' }}>Episodes ({episodes.length})</h3>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {episodes.map((ep) => (
               <div
                 key={ep.id}
-                className="card"
-                style={{
-                  padding: '12px 16px',
-                  cursor: 'pointer',
-                  border: 'none',
-                  background: activeVideo?.id === ep.id ? '#27272a' : '#18181b',
-                }}
                 onClick={() => setActiveVideo(ep)}
+                style={{
+                  padding: '14px 16px',
+                  cursor: 'pointer',
+                  borderRadius: '8px',
+                  background: activeVideo?.id === ep.id ? '#27272a' : '#18181b',
+                  border: 'none',
+                }}
               >
                 <span>{ep.title}</span>
               </div>
@@ -151,39 +171,59 @@ function App() {
         </div>
       ) : (
         <div>
-          <header className="header">
-            <div className="brand-badge">SQLite WebAssembly Engine</div>
-            <h1>TAGALOG ANIME 143</h1>
-            <p>Select an anime to load series episodes from anime.db</p>
+          <header style={{ textAlign: 'center', marginBottom: '24px' }}>
+            <div style={{ fontSize: '11px', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' }}>
+              SQLite WebAssembly Engine
+            </div>
+            <h1 style={{ fontSize: '22px', fontWeight: 'bold' }}>TAGALOG ANIME 143</h1>
+            <p style={{ fontSize: '13px', color: '#a1a1aa', marginTop: '4px' }}>
+              Select an anime to load series episodes from anime.db
+            </p>
           </header>
 
-          <div className="search-box">
+          <div style={{ marginBottom: '20px' }}>
             <input
               type="text"
               placeholder="Search anime title..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              style={{ border: 'none' }}
+              style={{
+                width: '100%',
+                padding: '14px 16px',
+                borderRadius: '8px',
+                background: '#18181b',
+                color: '#fff',
+                border: 'none',
+                outline: 'none',
+                fontSize: '15px',
+              }}
             />
           </div>
 
-          <main className="catalog-grid">
+          <main style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             {filteredList.length > 0 ? (
               filteredList.map((item) => (
                 <article
                   key={item.id}
-                  className="media-card"
                   onClick={() => handleSelectAnime(item)}
-                  style={{ padding: '16px', cursor: 'pointer', border: 'none' }}
+                  style={{
+                    padding: '16px',
+                    cursor: 'pointer',
+                    borderRadius: '10px',
+                    background: '#18181b',
+                    border: 'none',
+                  }}
                 >
-                  <span className="badge-category">{item.track}</span>
-                  <h3 className="card-title" style={{ marginTop: '8px' }}>
-                    {item.title}
-                  </h3>
+                  <span style={{ fontSize: '11px', color: '#38bdf8', background: '#09090b', padding: '2px 6px', borderRadius: '4px' }}>
+                    {item.track}
+                  </span>
+                  <h3 style={{ fontSize: '16px', marginTop: '6px' }}>{item.title}</h3>
                 </article>
               ))
             ) : (
-              <p className="no-results">No anime found matching "{query}" (Total loaded: {animeList.length})</p>
+              <p style={{ textAlign: 'center', color: '#a1a1aa', marginTop: '40px' }}>
+                No anime found matching "{query}" (Total loaded: {animeList.length})
+              </p>
             )}
           </main>
         </div>
