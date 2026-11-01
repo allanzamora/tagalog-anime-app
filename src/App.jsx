@@ -12,12 +12,13 @@ function App() {
   const [episodes, setEpisodes] = useState([]);
   const [activeVideo, setActiveVideo] = useState(null);
 
-  // 1. Load anime.db via WebAssembly
+  // 1. Load anime.db and sql.js locally
   useEffect(() => {
     async function loadDatabase() {
       try {
+        // Load WASM locally from the public folder
         const SQL = await initSqlJs({
-          locateFile: (file) => `https://sql.js.org/dist/${file}`,
+          locateFile: (file) => `/${file}`,
         });
 
         const response = await fetch('/anime.db');
@@ -29,11 +30,7 @@ function App() {
         const database = new SQL.Database(new Uint8Array(buffer));
         setDb(database);
 
-        // Debug: check what tables exist in the DB
-        const tablesRes = database.exec("SELECT name FROM sqlite_master WHERE type='table';");
-        console.log("Database Tables Found:", tablesRes);
-
-        // Fetch list table safely
+        // Fetch list table
         const res = database.exec('SELECT id, title, track FROM list');
         if (res.length > 0 && res[0].values) {
           const rows = res[0].values.map((row) => ({
@@ -41,14 +38,13 @@ function App() {
             title: row[1],
             track: row[2],
           }));
-          console.log("Loaded Anime List:", rows);
           setAnimeList(rows);
         } else {
           setDbError("Table 'list' is empty or not found in anime.db");
         }
         setLoading(false);
       } catch (err) {
-        console.error('Error loading SQLite DB:', err);
+        console.error('Error loading local SQLite DB:', err);
         setDbError(err.message);
         setLoading(false);
       }
@@ -100,8 +96,8 @@ function App() {
 
   if (loading) {
     return (
-      <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-        <h2>Loading Database...</h2>
+      <div style={{ textAlign: 'center', padding: '60px 20px', background: '#09090b', color: '#f4f4f5', minHeight: '100vh' }}>
+        <h2>Loading Local Database...</h2>
       </div>
     );
   }
@@ -143,7 +139,7 @@ function App() {
               ) : (
                 <div style={{ padding: '30px', textAlign: 'center' }}>
                   <h3>Now Playing: {activeVideo.title}</h3>
-                  <p style={{ color: '#a1a1aa', marginTop: '8px' }}>Video URL is currently null or placeholder.</p>
+                  <p style={{ color: '#a1a1aa', marginTop: '8px' }}>Video URL is currently placeholder.</p>
                 </div>
               )}
             </div>
@@ -173,7 +169,7 @@ function App() {
         <div>
           <header style={{ textAlign: 'center', marginBottom: '24px' }}>
             <div style={{ fontSize: '11px', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' }}>
-              SQLite WebAssembly Engine
+              Local SQLite WebAssembly
             </div>
             <h1 style={{ fontSize: '22px', fontWeight: 'bold' }}>TAGALOG ANIME 143</h1>
             <p style={{ fontSize: '13px', color: '#a1a1aa', marginTop: '4px' }}>
