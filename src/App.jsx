@@ -19,22 +19,17 @@ function App() {
           locateFile: (file) => `https://sql.js.org/dist/${file}`,
         });
 
-        // Fetch anime.db directly from GitHub raw link or local route
-        const dbUrl = 'https://raw.githubusercontent.com/allanzamora/tagalog-anime-app/main/public/anime.db';
-        const response = await fetch(dbUrl);
+        // Use absolute or relative path depending on your deployment
+        const response = await fetch('/anime.db');
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         
-        if (!response.ok) {
-          throw new Error(`Failed to download database: ${response.statusText}`);
-        }
-
         const buffer = await response.arrayBuffer();
         const database = new SQL.Database(new Uint8Array(buffer));
-
         setDb(database);
 
-        // Fetch initial list table
+        // Fetch list table safely
         const res = database.exec('SELECT id, title, track FROM list');
-        if (res.length > 0) {
+        if (res.length > 0 && res[0].values) {
           const rows = res[0].values.map((row) => ({
             id: row[0],
             title: row[1],
@@ -58,21 +53,26 @@ function App() {
     window.history.pushState({}, '', `/${anime.track}`);
 
     if (db) {
-      const stmt = db.prepare('SELECT id, track, title, url FROM episode WHERE track = :track');
-      stmt.bind({ ':track': anime.track });
+      try {
+        const stmt = db.prepare('SELECT id, track, title, url FROM episode WHERE track = :track');
+        stmt.bind({ ':track': anime.track });
 
-      const epList = [];
-      while (stmt.step()) {
-        const row = stmt.getAsObject();
-        epList.push(row);
-      }
-      stmt.free();
+        const epList = [];
+        while (stmt.step()) {
+          const row = stmt.getAsObject();
+          epList.push(row);
+        }
+        stmt.free();
 
-      setEpisodes(epList);
-      if (epList.length > 0 && epList[0].url) {
-        setActiveVideo(epList[0]);
-      } else {
-        setActiveVideo(null);
+        setEpisodes(epList);
+        // Fallback if url is null/empty so it still shows the item in UI
+        if (epList.length > 0) {
+          setActiveVideo(epList[0]);
+        } else {
+          setActiveVideo(null);
+        }
+      } catch (e) {
+        console.error('Error querying episodes:', e);
       }
     }
   };
@@ -86,7 +86,7 @@ function App() {
 
   // Filter list by title search
   const filteredList = animeList.filter((item) =>
-    item.title.toLowerCase().includes(query.toLowerCase())
+    item.title && item.title.toLowerCase().includes(query.toLowerCase())
   );
 
   if (loading) {
@@ -98,10 +98,10 @@ function App() {
   }
 
   return (
-    <div className="container">
+    <div className="container" style={{ border: 'none' }}>
       {selectedAnime ? (
         <div>
-          <button className="back-btn" onClick={handleBack}>
+          <button className="back-btn" onClick={handleBack} style={{ border: 'none' }}>
             ← Back to Anime List
           </button>
 
@@ -110,21 +110,24 @@ function App() {
             <h1>{selectedAnime.title}</h1>
           </div>
 
-          {/* Active Episode Video Player */}
-          {activeVideo && activeVideo.url ? (
+          {/* Active Episode Video Player / Fallback */}
+          {activeVideo ? (
             <div className="iframe-container" style={{ margin: '16px 0', borderRadius: '12px', overflow: 'hidden' }}>
-              <iframe
-                src={activeVideo.url}
-                title={activeVideo.title}
-                allowFullScreen
-                style={{ width: '100%', aspectRatio: '16/9', border: 0 }}
-              ></iframe>
+              {activeVideo.url && activeVideo.url !== '(null)' ? (
+                <iframe
+                  src={activeVideo.url}
+                  title={activeVideo.title}
+                  allowFullScreen
+                  style={{ width: '100%', aspectRatio: '16/9', border: 0 }}
+                ></iframe>
+              ) : (
+                <div className="card" style={{ padding: '30px', textAlign: 'center', background: '#18181b' }}>
+                  <h3>Now Playing: {activeVideo.title}</h3>
+                  <p style={{ color: '#a1a1aa', marginTop: '8px' }}>Video URL is currently placeholder or null in database.</p>
+                </div>
+              )}
             </div>
-          ) : (
-            <div className="card" style={{ padding: '20px', textAlign: 'center', margin: '16px 0' }}>
-              <p>Select an episode below to start streaming.</p>
-            </div>
-          )}
+          ) : null}
 
           {/* Episode List matching track */}
           <h3>Episodes ({episodes.length})</h3>
@@ -136,7 +139,8 @@ function App() {
                 style={{
                   padding: '12px 16px',
                   cursor: 'pointer',
-                  border: activeVideo?.id === ep.id ? '1px solid #3b82f6' : '1px solid #27272a',
+                  border: 'none',
+                  background: activeVideo?.id === ep.id ? '#27272a' : '#18181b',
                 }}
                 onClick={() => setActiveVideo(ep)}
               >
@@ -159,6 +163,7 @@ function App() {
               placeholder="Search anime title..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
+              style={{ border: 'none' }}
             />
           </div>
 
@@ -169,7 +174,7 @@ function App() {
                   key={item.id}
                   className="media-card"
                   onClick={() => handleSelectAnime(item)}
-                  style={{ padding: '16px', cursor: 'pointer' }}
+                  style={{ padding: '16px', cursor: 'pointer', border: 'none' }}
                 >
                   <span className="badge-category">{item.track}</span>
                   <h3 className="card-title" style={{ marginTop: '8px' }}>
@@ -178,7 +183,7 @@ function App() {
                 </article>
               ))
             ) : (
-              <p className="no-results">No anime found matching "{query}"</p>
+              <p className="no-results">No anime found matching "{query}" (Total loaded: {animeList.length})</p>
             )}
           </main>
         </div>
