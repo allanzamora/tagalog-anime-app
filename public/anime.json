@@ -1,9 +1,16 @@
 {
   "list": [
-    { "id": 1, "title": "Naruto Tagalog", "track": "naruto" }
+    { "title": "Naruto Tagalog", "track": "naruto" },
+    { "title": "Bleach Tagalog", "track": "bleach" }
   ],
   "episodes": [
-    { "id": 1, "track": "naruto", "title": "Naruto Episode 1", "url": "https://www.youtube.com/embed/dQw4w9WgXcQ" },
+    { "track": "naruto", "title": "Naruto Episode 1", "url": "https://www.youtube.com/embed/dQw4w9WgXcQ" },
+    { "track": "naruto", "title": "Naruto Episode 2", "url": "https://www.youtube.com/embed/dQw4w9WgXcQ" },
+    { "id": 2, "track": "naruto", "title": "Naruto Episode 3", "url": "https://www.youtube.com/embed/dQw4w9WgXcQ" },
+    { "id": 2, "track": "naruto", "title": "Naruto Episode 4", "url": "https://www.youtube.com/embed/dQw4w9WgXcQ" },
+    { "id": 2, "track": "naruto", "title": "Naruto Episode 5", "url": "https://www.youtube.com/embed/dQw4w9WgXcQ" },
+    { "id": 2, "track": "naruto", "title": "Naruto Episode 2", "url": "https://www.youtube.com/embed/dQw4w9WgXcQ" },
+    { "id": 2, "track": "naruto", "title": "Naruto Episode 2", "url": "https://www.youtube.com/embed/dQw4w9WgXcQ" },
     { "id": 2, "track": "naruto", "title": "Naruto Episode 2", "url": "https://www.youtube.com/embed/dQw4w9WgXcQ" }
   ]
 }

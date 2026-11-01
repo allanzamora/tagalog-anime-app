@@ -11,24 +11,41 @@ function App() {
   const [episodes, setEpisodes] = useState([]);
   const [activeVideo, setActiveVideo] = useState(null);
 
+  // Load catalog data and check URL path on mount
   useEffect(() => {
     async function loadData() {
       try {
         const response = await fetch('/anime.json');
-        if (!response.ok) {
-          throw new Error(`Failed to load catalog (Status: ${response.status})`);
-        }
+        if (!response.ok) throw new Error(`Failed to load catalog`);
         const data = await response.json();
-        setAnimeList(data.list || []);
-        setAllEpisodes(data.episodes || []);
+        
+        const list = data.list || [];
+        const episodesList = data.episodes || [];
+        
+        setAnimeList(list);
+        setAllEpisodes(episodesList);
+
+        // Check if current URL path matches any anime track (e.g. /naruto -> naruto)
+        const currentPath = window.location.pathname.replace('/', '').trim();
+        if (currentPath) {
+          const matchedAnime = list.find((item) => item.track.toLowerCase() === currentPath.toLowerCase());
+          if (matchedAnime) {
+            // Automatically select the anime and load its episodes
+            setSelectedAnime(matchedAnime);
+            const matchedEpisodes = episodesList.filter((ep) => ep.track === matchedAnime.track);
+            setEpisodes(matchedEpisodes);
+            if (matchedEpisodes.length > 0) {
+              setActiveVideo(matchedEpisodes[0]);
+            }
+          }
+        }
+
         setLoading(false);
       } catch (err) {
-        console.error('Error fetching JSON:', err);
         setError(err.message);
         setLoading(false);
       }
     }
-
     loadData();
   }, []);
 
@@ -101,15 +118,15 @@ function App() {
 
           <h3 style={{ margin: '20px 0 10px 0' }}>Episodes ({episodes.length})</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-            {episodes.map((ep) => (
+            {episodes.map((ep, index) => (
               <div
-                key={ep.id}
+                key={index} // Use index or ep.title since id is removed
                 onClick={() => setActiveVideo(ep)}
                 style={{
                   padding: '14px 16px',
                   cursor: 'pointer',
                   borderRadius: '8px',
-                  background: activeVideo?.id === ep.id ? '#27272a' : '#18181b',
+                  background: activeVideo?.title === ep.title ? '#27272a' : '#18181b',
                   border: 'none',
                 }}
               >
@@ -153,7 +170,7 @@ function App() {
             {filteredList.length > 0 ? (
               filteredList.map((item) => (
                 <article
-                  key={item.id}
+                  key={item.track} // Use track as unique key instead of id
                   onClick={() => handleSelectAnime(item)}
                   style={{
                     padding: '16px',
