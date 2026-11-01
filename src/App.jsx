@@ -1,84 +1,47 @@
 import React, { useState, useEffect } from 'react';
-import initSqlJs from 'sql.js';
 import './App.css';
 
 function App() {
-  const [db, setDb] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [dbError, setDbError] = useState(null);
+  const [error, setError] = useState(null);
   const [query, setQuery] = useState('');
   const [animeList, setAnimeList] = useState([]);
+  const [allEpisodes, setAllEpisodes] = useState([]);
   const [selectedAnime, setSelectedAnime] = useState(null);
   const [episodes, setEpisodes] = useState([]);
   const [activeVideo, setActiveVideo] = useState(null);
 
-  // 1. Load anime.db and sql.js locally
   useEffect(() => {
-    async function loadDatabase() {
+    async function loadData() {
       try {
-        // Load sql.js WASM engine from a reliable CDN
-        const SQL = await initSqlJs({
-          locateFile: (file) => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`,
-        });
-
-        // Fetch your local anime.db from the public folder
-        const response = await fetch('/anime.db');
+        const response = await fetch('/anime.json');
         if (!response.ok) {
-          throw new Error(`Failed to fetch anime.db (Status: ${response.status})`);
+          throw new Error(`Failed to load catalog (Status: ${response.status})`);
         }
-
-        const buffer = await response.arrayBuffer();
-        const database = new SQL.Database(new Uint8Array(buffer));
-        setDb(database);
-
-        // Fetch list table
-        const res = database.exec('SELECT id, title, track FROM list');
-        if (res.length > 0 && res[0].values) {
-          const rows = res[0].values.map((row) => ({
-            id: row[0],
-            title: row[1],
-            track: row[2],
-          }));
-          setAnimeList(rows);
-        } else {
-          setDbError("Table 'list' is empty or not found in anime.db");
-        }
+        const data = await response.json();
+        setAnimeList(data.list || []);
+        setAllEpisodes(data.episodes || []);
         setLoading(false);
       } catch (err) {
-        console.error('Error loading SQLite DB:', err);
-        setDbError(err.message);
+        console.error('Error fetching JSON:', err);
+        setError(err.message);
         setLoading(false);
       }
     }
 
-    loadDatabase();
+    loadData();
   }, []);
-  // 2. Query episodes where track matches selected anime track
+
   const handleSelectAnime = (anime) => {
     setSelectedAnime(anime);
     window.history.pushState({}, '', `/${anime.track}`);
 
-    if (db) {
-      try {
-        const stmt = db.prepare('SELECT id, track, title, url FROM episode WHERE track = :track');
-        stmt.bind({ ':track': anime.track });
-
-        const epList = [];
-        while (stmt.step()) {
-          const row = stmt.getAsObject();
-          epList.push(row);
-        }
-        stmt.free();
-
-        setEpisodes(epList);
-        if (epList.length > 0) {
-          setActiveVideo(epList[0]);
-        } else {
-          setActiveVideo(null);
-        }
-      } catch (e) {
-        console.error('Error querying episodes:', e);
-      }
+    const matched = allEpisodes.filter((ep) => ep.track === anime.track);
+    setEpisodes(matched);
+    if (matched.length > 0) {
+      setActiveVideo(matched[0]);
+    } else {
+      setActiveVideo(null);
     }
   };
 
@@ -89,7 +52,6 @@ function App() {
     window.history.pushState({}, '', '/');
   };
 
-  // Filter list by title search
   const filteredList = animeList.filter((item) =>
     item.title && item.title.toLowerCase().includes(query.toLowerCase())
   );
@@ -97,16 +59,16 @@ function App() {
   if (loading) {
     return (
       <div style={{ textAlign: 'center', padding: '60px 20px', background: '#09090b', color: '#f4f4f5', minHeight: '100vh' }}>
-        <h2>Loading Local Database...</h2>
+        <h2>Loading Catalog...</h2>
       </div>
     );
   }
 
   return (
-    <div style={{ width: '100%', minHeight: '100vh', padding: '16px', background: '#09090b', color: '#f4f4f5' }}>
-      {dbError && (
+    <div style={{ width: '100%', minHeight: '100vh', padding: '16px', background: '#09090b', color: '#f4f4f5', boxSizing: 'border-box' }}>
+      {error && (
         <div style={{ background: '#7f1d1d', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
-          <strong>DB Error:</strong> {dbError}
+          <strong>Error:</strong> {error}
         </div>
       )}
 
@@ -126,26 +88,17 @@ function App() {
             <h1 style={{ fontSize: '24px', marginTop: '8px' }}>{selectedAnime.title}</h1>
           </div>
 
-          {/* Active Episode Video Player */}
           {activeVideo ? (
             <div style={{ margin: '16px 0', borderRadius: '12px', overflow: 'hidden', background: '#18181b' }}>
-              {activeVideo.url && activeVideo.url !== '(null)' ? (
-                <iframe
-                  src={activeVideo.url}
-                  title={activeVideo.title}
-                  allowFullScreen
-                  style={{ width: '100%', aspectRatio: '16/9', border: 0 }}
-                ></iframe>
-              ) : (
-                <div style={{ padding: '30px', textAlign: 'center' }}>
-                  <h3>Now Playing: {activeVideo.title}</h3>
-                  <p style={{ color: '#a1a1aa', marginTop: '8px' }}>Video URL is currently placeholder.</p>
-                </div>
-              )}
+              <iframe
+                src={activeVideo.url}
+                title={activeVideo.title}
+                allowFullScreen
+                style={{ width: '100%', aspectRatio: '16/9', border: 0 }}
+              ></iframe>
             </div>
           ) : null}
 
-          {/* Episode List */}
           <h3 style={{ margin: '20px 0 10px 0' }}>Episodes ({episodes.length})</h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {episodes.map((ep) => (
@@ -169,11 +122,11 @@ function App() {
         <div>
           <header style={{ textAlign: 'center', marginBottom: '24px' }}>
             <div style={{ fontSize: '11px', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' }}>
-              Local SQLite WebAssembly
+              Tagalog Anime Streamer
             </div>
             <h1 style={{ fontSize: '22px', fontWeight: 'bold' }}>TAGALOG ANIME 143</h1>
             <p style={{ fontSize: '13px', color: '#a1a1aa', marginTop: '4px' }}>
-              Select an anime to load series episodes from anime.db
+              Select an anime to stream episodes
             </p>
           </header>
 

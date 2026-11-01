@@ -1,0 +1,9 @@
+{
+  "list": [
+    { "id": 1, "title": "Naruto Tagalog", "track": "naruto" }
+  ],
+  "episodes": [
+    { "id": 1, "track": "naruto", "title": "Naruto Episode 1", "url": "https://www.youtube.com/embed/dQw4w9WgXcQ" },
+    { "id": 2, "track": "naruto", "title": "Naruto Episode 2", "url": "https://www.youtube.com/embed/dQw4w9WgXcQ" }
+  ]
+}
