@@ -1,0 +1,32 @@
+[
+  {
+    "id": "1",
+    "slug": "yamato-nadeshiko",
+    "title": "Yamato Nadeshiko Tagalog Version",
+    "category": "Romance / Comedy",
+    "episodes": "25 Episodes",
+    "poster": "https://images.unsplash.com/photo-1578632767115-351597cf2477?w=500&auto=format&fit=crop&q=60",
+    "videoUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "description": "Four handsome boys are tasked with turning a high school girl into a proper lady."
+  },
+  {
+    "id": "2",
+    "slug": "hunter-x-hunter",
+    "title": "Hunter x Hunter Tagalog Dub",
+    "category": "Action / Shonen",
+    "episodes": "148 Episodes",
+    "poster": "https://images.unsplash.com/photo-1534447677768-be436bb09401?w=500&auto=format&fit=crop&q=60",
+    "videoUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "description": "Gon Freecss aspires to become a Hunter in order to find his long-lost father."
+  },
+  {
+    "id": "3",
+    "slug": "bleach",
+    "title": "Bleach Tagalog Dub",
+    "category": "Action / Supernatural",
+    "episodes": "366 Episodes",
+    "poster": "https://images.unsplash.com/photo-1563089145-599997674d42?w=500&auto=format&fit=crop&q=60",
+    "videoUrl": "https://www.youtube.com/embed/dQw4w9WgXcQ",
+    "description": "Ichigo Kurosaki gains the powers of a Soul Reaper to protect his family and town."
+  }
+]
