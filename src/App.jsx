@@ -16,11 +16,12 @@ function App() {
   useEffect(() => {
     async function loadDatabase() {
       try {
-        // Load WASM locally from the public folder
+        // Load sql.js WASM engine from a reliable CDN
         const SQL = await initSqlJs({
-          locateFile: (file) => `/${file}`,
+          locateFile: (file) => `https://cdnjs.cloudflare.com/ajax/libs/sql.js/1.8.0/${file}`,
         });
 
+        // Fetch your local anime.db from the public folder
         const response = await fetch('/anime.db');
         if (!response.ok) {
           throw new Error(`Failed to fetch anime.db (Status: ${response.status})`);
@@ -44,7 +45,7 @@ function App() {
         }
         setLoading(false);
       } catch (err) {
-        console.error('Error loading local SQLite DB:', err);
+        console.error('Error loading SQLite DB:', err);
         setDbError(err.message);
         setLoading(false);
       }
@@ -52,7 +53,6 @@ function App() {
 
     loadDatabase();
   }, []);
-
   // 2. Query episodes where track matches selected anime track
   const handleSelectAnime = (anime) => {
     setSelectedAnime(anime);
