@@ -1,22 +1,14 @@
-:root {
-  --bg-main: #09090b;
-  --card-bg: #141b22;
-  --accent-color: #38bdf8;
-  --text-main: #f4f4f5;
-  --text-muted: #a1a1aa;
-}
-
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-body, html {
+html, body {
   width: 100%;
   min-height: 100vh;
-  background-color: var(--bg-main);
-  color: var(--text-main);
+  background-color: #09090b; /* Matches app background completely */
+  color: #f4f4f5;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   overflow-x: hidden;
 }
@@ -24,11 +16,23 @@ body, html {
 #root {
   width: 100%;
   min-height: 100vh;
+  background-color: #09090b;
 }
 
+/* Centered container with 800px max width */
+.app-container {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px 16px;
+  min-height: 100vh;
+  background-color: #09090b;
+}
 .container {
+  
   width: 100%;
   padding: 24px 16px 80px 16px;
+  max-width: 800px;
 }
 
 .header {

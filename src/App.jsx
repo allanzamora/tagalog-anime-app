@@ -30,7 +30,6 @@ function App() {
         if (currentPath) {
           const matchedAnime = list.find((item) => item.track.toLowerCase() === currentPath.toLowerCase());
           if (matchedAnime) {
-            // Automatically select the anime and load its episodes
             setSelectedAnime(matchedAnime);
             const matchedEpisodes = episodesList.filter((ep) => ep.track === matchedAnime.track);
             setEpisodes(matchedEpisodes);
@@ -49,9 +48,34 @@ function App() {
     loadData();
   }, []);
 
+  const updateMetaTags = (title, description, canonicalPath) => {
+    document.title = title;
+    let metaDesc = document.querySelector("meta[name='description']");
+    if (!metaDesc) {
+      metaDesc = document.createElement('meta');
+      metaDesc.name = 'description';
+      document.head.appendChild(metaDesc);
+    }
+    metaDesc.content = description;
+
+    let canonical = document.querySelector("link[rel='canonical']");
+    if (!canonical) {
+      canonical = document.createElement('link');
+      canonical.rel = 'canonical';
+      document.head.appendChild(canonical);
+    }
+    canonical.href = `https://tagalogxx.vercel.app${canonicalPath}`;
+  };
+
   const handleSelectAnime = (anime) => {
     setSelectedAnime(anime);
     window.history.pushState({}, '', `/${anime.track}`);
+
+    updateMetaTags(
+      `${anime.title} Tagalog Dubbed - Tagalog Anime 143`,
+      `Watch and stream ${anime.title} with Tagalog audio and episodes online for free.`,
+      `/${anime.track}`
+    );
 
     const matched = allEpisodes.filter((ep) => ep.track === anime.track);
     setEpisodes(matched);
@@ -67,6 +91,12 @@ function App() {
     setEpisodes([]);
     setActiveVideo(null);
     window.history.pushState({}, '', '/');
+
+    updateMetaTags(
+      'Tagalog Anime 143 - Watch Tagalog Dubbed Anime Online',
+      'Stream your favorite Tagalog-dubbed anime series and episodes online for free.',
+      '/'
+    );
   };
 
   const filteredList = animeList.filter((item) =>
@@ -75,14 +105,14 @@ function App() {
 
   if (loading) {
     return (
-      <div style={{ textAlign: 'center', padding: '60px 20px', background: '#09090b', color: '#f4f4f5', minHeight: '100vh' }}>
+      <div style={{ textAlign: 'left', padding: '60px 20px', background: '#09090b', color: '#f4f4f5', minHeight: '100vh' }}>
         <h2>Loading Catalog...</h2>
       </div>
     );
   }
 
   return (
-    <div style={{ width: '100%', minHeight: '100vh', padding: '16px', background: '#09090b', color: '#f4f4f5', boxSizing: 'border-box' }}>
+    <div className="app-container">
       {error && (
         <div style={{ background: '#7f1d1d', padding: '12px', borderRadius: '8px', marginBottom: '16px' }}>
           <strong>Error:</strong> {error}
@@ -91,18 +121,27 @@ function App() {
 
       {selectedAnime ? (
         <div>
-          <button 
-            onClick={handleBack} 
-            style={{ background: '#27272a', color: '#fff', border: 'none', padding: '10px 16px', borderRadius: '8px', cursor: 'pointer', marginBottom: '16px' }}
-          >
-            ← Back to Anime List
-          </button>
-
-          <div style={{ marginBottom: '16px' }}>
-            <span style={{ background: '#3b82f6', color: '#fff', padding: '4px 8px', borderRadius: '4px', fontSize: '12px' }}>
-              Track: {selectedAnime.track}
-            </span>
-            <h1 style={{ fontSize: '24px', marginTop: '8px' }}>{selectedAnime.title}</h1>
+          {/* Horizontal Flex Container for Back Button and Title */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
+            <button 
+              onClick={handleBack} 
+              style={{ 
+                background: '#27272a', 
+                color: '#fff', 
+                border: 'none', 
+                padding: '10px 14px', 
+                borderRadius: '8px', 
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                fontSize: '14px',
+                fontWeight: '600'
+              }}
+            >
+              ← Back
+            </button>
+            <h1 style={{ fontSize: '22px', margin: 0, color: '#ffffff', fontWeight: '700' }}>
+              {selectedAnime.title}
+            </h1>
           </div>
 
           {activeVideo ? (
@@ -117,20 +156,23 @@ function App() {
           ) : null}
 
           <h3 style={{ margin: '20px 0 10px 0' }}>Episodes ({episodes.length})</h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          
+          {/* Grid View Container for Episodes */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '10px' }}>
             {episodes.map((ep, index) => (
               <div
-                key={index} // Use index or ep.title since id is removed
+                key={index}
                 onClick={() => setActiveVideo(ep)}
                 style={{
-                  padding: '14px 16px',
+                  padding: '14px 12px',
                   cursor: 'pointer',
-                  borderRadius: '8px',
+                  borderRadius: '10px',
                   background: activeVideo?.title === ep.title ? '#27272a' : '#18181b',
                   border: 'none',
+                  textAlign: 'center',
                 }}
               >
-                <span>{ep.title}</span>
+                <span style={{ fontSize: '14px', fontWeight: '600', color: '#ffffff' }}>{ep.title}</span>
               </div>
             ))}
           </div>
@@ -141,9 +183,9 @@ function App() {
             <div style={{ fontSize: '11px', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' }}>
               Tagalog Anime Streamer
             </div>
-            <h1 style={{ fontSize: '22px', fontWeight: 'bold' }}>TAGALOG ANIME 143</h1>
+            <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#ffffff' }}>Watch Tagalog Anime</h1>
             <p style={{ fontSize: '13px', color: '#a1a1aa', marginTop: '4px' }}>
-              Select an anime to stream episodes
+              Watch your favorite anime tagalog dubbed movies and series for free.
             </p>
           </header>
 
@@ -170,20 +212,17 @@ function App() {
             {filteredList.length > 0 ? (
               filteredList.map((item) => (
                 <article
-                  key={item.track} // Use track as unique key instead of id
+                  key={item.track}
                   onClick={() => handleSelectAnime(item)}
                   style={{
-                    padding: '16px',
+                    padding: '18px 20px',
                     cursor: 'pointer',
                     borderRadius: '10px',
                     background: '#18181b',
                     border: 'none',
                   }}
                 >
-                  <span style={{ fontSize: '11px', color: '#38bdf8', background: '#09090b', padding: '2px 6px', borderRadius: '4px' }}>
-                    {item.track}
-                  </span>
-                  <h3 style={{ fontSize: '16px', marginTop: '6px' }}>{item.title}</h3>
+                  <h3 style={{ fontSize: '17px', fontWeight: '700', color: '#ffffff', margin: 0 }}>{item.title}</h3>
                 </article>
               ))
             ) : (
