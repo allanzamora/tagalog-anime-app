@@ -64,7 +64,7 @@ function App() {
       canonical.rel = 'canonical';
       document.head.appendChild(canonical);
     }
-    canonical.href = `https://tagalogxx.vercel.app${canonicalPath}`;
+    canonical.href = `https://tagalogmoviehub.vercel.app${canonicalPath}`;
   };
 
   const handleSelectAnime = (anime) => {
@@ -72,7 +72,7 @@ function App() {
     window.history.pushState({}, '', `/${anime.track}`);
 
     updateMetaTags(
-      `${anime.title} Tagalog Dubbed - Tagalog Anime 143`,
+      `${anime.title} Dubbed - TagalogMovieHub`,
       `Watch and stream ${anime.title} with Tagalog audio and episodes online for free.`,
       `/${anime.track}`
     );
@@ -180,12 +180,9 @@ function App() {
       ) : (
         <div>
           <header style={{ textAlign: 'center', marginBottom: '24px' }}>
-            <div style={{ fontSize: '11px', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px' }}>
-              Tagalog Anime Streamer
-            </div>
-            <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#ffffff' }}>Watch Tagalog Anime</h1>
+            <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#ffffff' }}>Tagalog Movie Hub</h1>
             <p style={{ fontSize: '13px', color: '#a1a1aa', marginTop: '4px' }}>
-              Watch your favorite anime tagalog dubbed movies and series for free.
+              Stream your favorite Tagalog-dubbed movies, series and episodes online for free.
             </p>
           </header>
 
@@ -208,7 +205,7 @@ function App() {
             />
           </div>
 
-          <main style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+          <main style={{ display: 'flex', flexDirection: 'column', gap: '12px' , textAlign: 'left'}}>
             {filteredList.length > 0 ? (
               filteredList.map((item) => (
                 <article
