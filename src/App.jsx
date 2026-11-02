@@ -167,7 +167,7 @@ function App() {
         </div>
       ) : (
         <div>
-          <header style={{ textAlign: 'center', marginBottom: '24px' }}>
+          <header id="header" style={{ textAlign: 'center', marginBottom: '24px' }}>
             <img src="launcher.png" class="toplogo"/>
             <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#ffffff' }}>Tagalog Movie Hub</h1>
             <p style={{ fontSize: '14px', color: '#a1a1aa', marginTop: '4px' }}>
@@ -208,14 +208,17 @@ function App() {
                     border: 'none',
                   }}
                 >
+                  <img src={item.ic} class="pickz" loading="lazy"></img>
                   <h3 style={{ fontSize: '17px', fontWeight: '700', color: '#ffffff', margin: 0 }}>{item.title}</h3>
                 </article>
+                
               ))
             ) : (
               <p style={{ textAlign: 'center', color: '#a1a1aa', marginTop: '40px' }}>
                 No anime found matching "{query}" (Total loaded: {animeList.length})
               </p>
             )}
+            <center><p>For more Tagalog Dubbed Movies & Series Download our official Android app <a href="#header" class="urlme">HERE</a>, enjoy exclusive videos..</p></center>
           </main>
         </div>
       )}
