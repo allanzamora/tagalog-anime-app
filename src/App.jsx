@@ -72,7 +72,7 @@ function App() {
     window.history.pushState({}, '', `/${anime.track}`);
 
     updateMetaTags(
-      `${anime.title} Dubbed - TagalogMovieHub`,
+      `${anime.title} - TagalogMovieHub`,
       `Watch and stream ${anime.title} with Tagalog audio and episodes online for free.`,
       `/${anime.track}`
     );
@@ -93,8 +93,8 @@ function App() {
     window.history.pushState({}, '', '/');
 
     updateMetaTags(
-      'Tagalog Anime 143 - Watch Tagalog Dubbed Anime Online',
-      'Stream your favorite Tagalog-dubbed anime series and episodes online for free.',
+      'Tagalog Movie Hub - Watch Tagalog Dubbed Movies and Series',
+      'Stream your favorite Tagalog-dubbed movies, series and episodes online for free.',
       '/'
     );
   };
@@ -137,7 +137,7 @@ function App() {
                 fontWeight: '600'
               }}
             >
-              ← Back
+              ← Tagalog Movie Hub
             </button>
             <h1 style={{ fontSize: '22px', margin: 0, color: '#ffffff', fontWeight: '700' }}>
               {selectedAnime.title}
@@ -147,7 +147,7 @@ function App() {
           {activeVideo ? (
             <div style={{ margin: '16px 0', borderRadius: '12px', overflow: 'hidden', background: '#18181b' }}>
               <iframe
-                src={activeVideo.url}
+                src={activeVideo.urlme}
                 title={activeVideo.title}
                 allowFullScreen
                 style={{ width: '100%', aspectRatio: '16/9', border: 0 }}
@@ -155,41 +155,30 @@ function App() {
             </div>
           ) : null}
 
-          <h3 style={{ margin: '20px 0 10px 0' }}>Episodes ({episodes.length})</h3>
+          <div class="ccaa">
+          <h2 class="ccaa">About</h2>
+          <p>{activeVideo.title}</p>
           
-          {/* Grid View Container for Episodes */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(130px, 1fr))', gap: '10px' }}>
-            {episodes.map((ep, index) => (
-              <div
-                key={index}
-                onClick={() => setActiveVideo(ep)}
-                style={{
-                  padding: '14px 12px',
-                  cursor: 'pointer',
-                  borderRadius: '10px',
-                  background: activeVideo?.title === ep.title ? '#27272a' : '#18181b',
-                  border: 'none',
-                  textAlign: 'center',
-                }}
-              >
-                <span style={{ fontSize: '14px', fontWeight: '600', color: '#ffffff' }}>{ep.title}</span>
-              </div>
-            ))}
+          <h3>Download Link</h3>
+          <p>This <strong>{selectedAnime.title}</strong> can be download inside <a href="https://tagalog-anime143.blogspot.com/p/tagalog-anime-143-android-app.html" target="_blank" class="urlme">Tagalog Moviex Android App</a> for FREE, and more videos is waiting, adfree, no signup.</p>
+          <br></br>
+            <p><strong>Tags</strong>: {activeVideo.tag}</p>
           </div>
         </div>
       ) : (
         <div>
           <header style={{ textAlign: 'center', marginBottom: '24px' }}>
+            <img src="launcher.png" class="toplogo"/>
             <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#ffffff' }}>Tagalog Movie Hub</h1>
-            <p style={{ fontSize: '13px', color: '#a1a1aa', marginTop: '4px' }}>
-              Stream your favorite Tagalog-dubbed movies, series and episodes online for free.
+            <p style={{ fontSize: '14px', color: '#a1a1aa', marginTop: '4px' }}>
+              Stream your favorite Tagalog-dubbed movies, series and episodes online for free. Download our official Android App Here <a href="https://tagalog-anime143.blogspot.com/p/tagalog-anime-143-android-app.html" target="_blank" class="urlme">Tagalog Moviex (Tagalog Anime 143)</a> for FREE.
             </p>
           </header>
 
           <div style={{ marginBottom: '20px' }}>
             <input
               type="text"
-              placeholder="Search anime title..."
+              placeholder="Search title here…"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               style={{
